@@ -1,0 +1,8 @@
+GET     /users                   controllers.UserController.retrieveAllUsers()
+POST    /users                   controllers.UserController.createUser()
+GET     /users/:username         controllers.UserController.retrieveUser(username)
+PUT     /users/:username         controllers.UserController.updateUser(username)
+DELETE  /users/:username         controllers.UserController.deleteUser(username)
+GET     /users/:username/profile controllers.UserController.retrieveUserProfile(username)
+PUT     /users/:username/profile controllers.UserController.updateUserProfile(username)
+DELETE  /users/:username/profile controllers.UserController.deleteUserProfile(username)

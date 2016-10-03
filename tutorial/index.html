@@ -1,0 +1,558 @@
+<html lang="en">
+  <head>
+    <title>Longevity and Play - Activator Template</title>
+  </head>
+  <body>
+
+    <div>
+      <h2>Getting Started with longevity</h2>
+
+      <p>
+        This tutorial walks through the basic steps needed to get
+        started building a real-life application
+        with <a href="http://longevityframework.github.io/longevity/"
+        target="_blank">longevity</a>. The application we will be
+        looking at here is a sample blogging application, built with
+        longevity on the back end, and using
+        <a href="https://www.playframework.com/"
+        target="_blank">Play</a> for a REST API that could be
+        used by a web client.
+      </p>
+
+      <p>
+        We will only have the chance to cover a portion of the
+        blogging application code in this tutorial, so please feel
+        free to explore the codebase further on your own. You can also
+        look to
+        the <a href="http://longevityframework.github.io/longevity/manual/"
+        target="_blank">user manual</a> for more information.
+      </p>
+    </div>
+    
+    <div>
+      <h2>Modeling our Subdomain</h2>
+
+      <p>
+        We have
+        four <a href="http://longevityframework.github.io/longevity/manual/ddd-basics/aggregates-and-entities.html"
+        target="_blank">entity aggregates</a> in our domain model:
+        users, blogs, blog posts, and comments. The arrows in this
+        diagram indicate relationships between aggregates: comments
+        are made on blog posts, blog posts are made in a blog, and
+        blogs, blog posts and comments all have authors:
+      </p>
+
+      <p>
+        <img src="tutorial/domain-model.png">
+      </p>
+
+      <p>
+        For the purposes of this tutorial, we are going to focus in on
+        the user aggregate. This aggregate consists of two entities: the
+        user itself, and the user profile:
+      </p>
+      
+      <p>
+        <img src="tutorial/user-aggregate.png">
+      </p>
+
+    </div>
+
+    <div>
+      <h2>Building the User Aggregate</h2>
+
+      <p>
+        The user aggregate has four parts: the <code>User</code>,
+        the <code>UserProfile</code>, and two natural keys:
+        the <code>Username</code> and the <code>Email</code>.
+        Let's focus on the <code>User</code> first, since that is the
+        heart of the aggregate. You can find the source code
+        for <code>User</code> <a href="#code/app/domain/User.scala"
+                                 class="shortcut">here</a>
+      </p>
+
+      <p>
+        The <code>User</code> is a simple case class that extends
+        empty longevity trait <code>Persistent</code>, which we use to mark
+        things we want to persist to the database.
+      </p>
+
+      <p>
+        The <code>User</code> case class provides us with the four
+        members we find in the UML in the
+        <a href="#tutorial/1">previous section</a>, including the
+        relationship between <code>User</code>
+        and <code>UserProfile</code>. There are also a couple of
+        business methods inside: <code>updateProfile</code>
+        and <code>deleteProfile</code>.
+      </p>
+
+      <p>
+        The <code>User</code> companion object provides metadata about
+        the <code>User</code>: information that pertains not to an
+        individual user, but to a collection of them. We first specify
+        two properties, <code>User.props.username</code>
+        and <code>User.props.email</code>, that we use to refer to
+        members of <code>User</code> objects. Then we define two
+        keys: <code>User.keys.username</code>
+        and <code>User.keys.email</code>, that specify that these
+        two member are to be unique: no two users should have the same
+        username or email.
+      </p>
+
+      <p>
+        The <code>User</code> companion object
+        extends <code>PType</code>, which is a type class for
+        a <code>Persistent</code>. Every <code>PType</code> defines
+        its <code>props</code>, <code>keys</code>,
+            and <code>indexes</code>, as you see in this example.
+      </p>
+      
+    </div>
+
+    <div>
+      <h2>The User Profile</h2>
+
+      <p>
+        The <a href="#code/app/domain/UserProfile.scala"
+               class="shortcut">user profile</a> is an entity that is
+               part of the user aggregate. It's a simple case class
+               that extends empty longevity marker trait <code>Embeddable</code>,
+               which we use to mark things that we want to embed in
+        our persistent objects.
+      </p>
+
+      <p>
+        The <code>UserProfile</code> has two members that are
+        also <code>Embeddables</code>: <a href="#code/app/domain/Uri.scala"
+        class="shortcut"><code>Uri</code></a>
+        and <a href="#code/app/domain/Markdown.scala"
+        class="shortcut"><code>Markdown</code></a>. These are simple
+        wrapper classes for strings, which provide extra type safety,
+        but are also places where we might add some extra
+        functionality in the future. For instance,
+        the <code>Uri</code> constructor might throw some kind of
+        validation exception if the provided string is not a valid
+        URI. As you can see, we can freely
+        nest <code>Embeddables</code> within
+        our <code>Persistent</code> classes.
+      </p>
+    </div>
+    
+    <div>
+      <h2>Username and Email</h2>
+
+      <p>
+        The final components of our user aggregate are
+        <a href="#code/app/domain/Username.scala"
+        class="shortcut"><code>Username</code></a> and
+        <a href="#code/app/domain/Email.scala"
+        class="shortcut"><code>Email</code></a>, which are the key
+        values for our natural keys, <code>User.keys.username</code>
+        and <code>User.keys.email</code>, respectively. Aside from
+        being parts of our user aggregate, we can also embed them in
+        other classes, such as 
+        <a href="#code/app/domain/BlogPost.scala"
+        class="shortcut"><code>BlogPost</code></a>, (see line 16), to
+        describe a relationship between a blog post and its authors.
+      </p>
+    </div>
+
+    <div>
+      <h2>Building the Subdomain</h2>
+
+      <p>
+        Once the elements we want to persist have been created, we gather
+        them all together into a <code>Subdomain</code> object. We do
+        this in
+        <a href="#code/app/domain/SimblSubdomain.scala"
+        class="shortcut"><code>SimblSubdomain</code></a> by extending
+        longevity class <code>Subdomain</code>.
+      </p>
+
+      <p>
+        As you can see in the code, we need to gather up all
+        our <code>PTypes</code> into a
+        <code>PTypePool</code>. We also create <code>ETypes</code> for
+        our <code>Embeddables</code>, and gather them into an <code>ETypePool</code>.
+        <code>PTypePool</code> and <code>ETypePool</code> are simple
+        collections of <code>PTypes</code>
+        and <code>ETypes</code>. You can think of them as sets.
+      </p>
+
+    </div>
+
+    <div>
+      <h2>Building the Longevity Context</h2>
+
+      <p>
+        Once we have your subdomain in place, we are ready to build
+        our <code>LongevityContext</code>, as we do on line 17 of 
+        <a href="#code/app/Module.scala"
+        class="shortcut"><code>Module.scala</code></a>. The
+        longevity context provides a variety of tools that are
+        tailored to your subdomain. The most important of these is
+        the <code>RepoPool</code>, which contains repositories for
+        your persistent objects. You can use these repositories to do
+        standard CRUD operations (create/retrieve/update/delete), as
+        well as executing queries that return more than one result.
+      </p>
+
+      <p>
+        Longevity uses <a href="https://github.com/typesafehub/config"
+        target="_blank">Typesafe Config</a> to configure the longevity
+        context. Typically, the configuration is drawn from
+        the <a href="#code/conf/application.conf"><code>application.conf</code></a>
+        resource file. Here, you can find configurations for main and
+        test databases for both Mongo and Cassandra. If you want to
+        experiment with adjusting the persistence strategy to use a
+        real database, you may need to tweak this configuration.
+      </p>
+      
+      <p>
+        You also need to specify the back end in configuration
+        property <code>longevity.backEnd</code>. Your choices are
+        currently <code>InMem</code>, <code>Mongo</code>,
+        and <code>Cassandra</code>. We use <code>InMem</code> out of
+        the box, so that this tutorial will work even if you don't
+        have a MongoDB or Cassandra database set up for use.
+      </p>
+
+    </div>
+
+    <div>
+      <h2>The Play Routes</h2>
+
+      <p>
+        Let's skip ahead to look at the Play routes. In a moment,
+        we'll come back to our controller class to see how these routes
+        are hooked up to the back-end repositories.
+      </p>
+
+      <p>
+        These routes define an application API that might be used by
+        a JavaScript application front-end. We haven't had the time to
+        actually write a front end yet. If you would like to give it a
+        shot, we would happily consider any pull requests!
+      </p>
+
+      <p>
+        <a href="#code/conf/routes"
+        class="shortcut"><code>conf/routes</code></a> file defines the
+        Simple Blogging API for users and user profiles. The following
+        routes are defined:
+      </p>
+
+      <ul>
+        <li><code>POST /users</code> - creates a new user</li>
+        <li><code>GET /users</code> - retrieves all the users</li>
+        <li><code>GET /users/$username</code> - retrieves a single user</li>
+        <li><code>PUT /users/$username</code> - updates an existing user</li>
+        <li><code>DELETE /users/$username</code> - deletes an existing
+        user</li>
+        <li><code>GET /users/$username/profile</code> - retrieves a
+        user profile</li>
+        <li><code>PUT /users/$username/profile</code> - creates or updates a
+        user profile</li>
+        <li><code>DELETE /users/$username/profile</code> - deletes a
+        user profile</li>
+      </ul>
+
+      <p>
+        <i>Please note that the <code>GET /users</code> endpoint will
+        not work with a Cassandra persistence strategy, because
+        Cassandra does not support unfiltered queries.</i>
+      </p>
+
+      <p>
+        These routes are defined in
+        the <a href="https://www.playframework.com/documentation/2.5.x/ScalaRouting"
+        target="_blank">standard Play idiom</a>, and we will not go
+        into the details here. The important thing to note is that the
+        work for each of these endpoints delegates to one of the
+        methods in
+        <a href="#code/app/controllers/UserController.scala"
+        class="shortcut"><code>UserController.scala</code></a>, which
+        we will turn to next.
+      </p>
+      
+    </div>
+
+    <div>
+      <h2>The User Controller</h2>
+      
+      <p>
+        In <a href="#code/app/controllers/UserController.scala"
+        class="shortcut"><code>UserController.scala</code></a>, we find
+        eight service methods here that mirror the eight 
+        <a href="#tutorial/7">user routes</a>. Each controller method
+        is implemented asynchronously
+        with Play method <code>Action.async</code>. We use JSON body
+        parsers, and play method <code>Json.toJson</code>, to convert
+        Scala case classes in and out of JSON.
+      </p>
+
+      <p>
+        An important thing to note here is that each of the
+        controller methods is defined in terms of API classes
+        <a href="#code/app/views/UserInfo.scala"
+        class="shortcut"><code>UserInfo.scala</code></a> and
+        <a href="#code/app/views/ProfileInfo.scala"
+        class="shortcut"><code>ProfileInfo.scala</code></a>,
+        and <i>not</i> in terms of the domain entities
+        themselves. This is probably not necessary for such a simple
+        application as this, but it's a good practice, because the UI
+        typically speaks in a different language than the domain
+        model. As a simple example, some user information, such as
+        email or street address, should largely be considered private,
+        and should be left out of most UI views.
+      </p>
+
+      <p>
+        As you can see, <code>UserInfo</code>
+        and <code>ProfileInfo</code> are simple case classes that
+        should convert in and out of JSON cleanly. They also each
+        contain a couple of methods for conversions between the API
+        objects and the domain objects.
+      </p>
+
+      <p>
+        To do its job, the <code>UserController</code> is going to
+        have to access the user table in the database. It does this
+        via the user repository, of type <code>Repo[User]</code>, that
+        is injected into the controller by the Play framework.
+        Because the repository methods need an execution context to
+        run in, the Play dependency injection mechanism also provides an
+        execution context.
+      </p>
+
+      <p>
+        There are a number of controller methods
+        in <code>UserController</code>. In this tutorial, we will
+        focus on
+        three: <code>createUser</code>, <code>retrieveUser</code>,
+        and <code>updateUser</code>.
+      </p>
+
+    </div>
+
+    <div>
+      <h2>UserController.createUser</h2>
+
+      <p>
+        The heart of the
+        <a href="#code/app/controllers/UserController.scala"
+           class="shortcut"><code>UserController.createUser</code></a>. is
+           the call to <code>userRepo.create</code>, inside the for
+           comprehension. <code>userRepo.create</code> returns
+           a <code>Future[PState[User]]</code>. The future is there
+           because we want to treat the underlying database call in an
+           asynchronous fashion. The <code>User</code> is further
+           wrapped in a <code>PState</code>, or <i>persistent
+           state</i>, which contains persistence information about the
+           user that is not part of the domain model. You don't need
+           to know much of anything about a <code>PState</code>,
+           except that you can call methods <code>get</code>
+           and <code>map</code> on it, to work with the
+           underlying <code>User</code> inside.
+      </p>
+
+      <p>
+        In the yield clause of the for comprehension in this
+        method, <code>created.get</code> retrieves
+        the <code>User</code> from the <code>PState</code>. This in
+        turn is passed to a method that converts from
+        a <code>User</code> to a <code>UserInfo</code>. We then
+        convert this into JSON, and wrap it in a Play <code>Ok</code>
+        HTTP result.
+      </p>
+
+      <p>
+        One caveat here is that <code>userRepo.create</code> might
+        actually fail with a duplicate key exception. There might
+        already be a user that has either the same username or
+        email. So we call <code>recover</code> on the
+        resulting <code>Future</code> and convert the
+        longevity <code>DuplicateKeyValException</code> into a
+        <code>Conflict</code> HTTP result.
+      </p>
+      
+    </div>
+
+    <div>
+      <h2>UserController.retrieveUser</h2>
+
+      <p>
+        <a href="#code/app/controllers/UserController.scala"
+           class="shortcut"><code>UserController.retrieveUser</code></a>
+           does its work by calling <code>userRepo.retrieve</code>. To
+           call this method, we have to convert from
+           the <code>username</code> string to
+           a <code>Username</code>, as <code>userRepo.retrieve</code>
+           takes a <code>KeyVal</code> as argument.
+      </p>
+      
+      <p>
+        Once again, the <code>User</code> is wrapped in
+        a <code>PState</code>, so we can manipulate its persistent
+        state if we wish. This in turn is wrapped in
+        an <code>Option</code>, as there may or may not be a user with
+        that username. This in turn is wrapped in
+        a <code>Future</code>, as we want to treat the database call
+        in an asynchronous fashion. This feels like a lot of layers of
+        wrapping, but they are not too painful to work with if you use
+        for comprehensions.
+      </p>
+
+      <p>
+        If no user was retrieved, we
+        return <code>NotFound</code>. When we do find a user, we need
+        to convert it into a <code>UserInfo</code>, convert that to
+        JSON, and wrap it in an <code>Ok</code>. This is done in two
+        lines in the <code>yield</code> clause of the for
+        comprehension.
+      </p>
+      
+    </div>
+
+    <div>
+      <h2>UserController.updateUser</h2>
+
+      <p>
+        Let's take a look at
+        <a href="#code/app/controllers/UserController.scala"
+           class="shortcut"><code>UserController.updateUser</code></a>. This
+           method shows a variation
+           on <code>userRepo.retrieve</code>: <code>userRepo.retrieveOne</code>. <code>retrieveOne</code>
+           opens up the <code>Option</code> for you, throwing
+           a <code>NoSuchElementException</code> if
+           the <code>Option</code> is empty. We handle
+           the <code>NoSuchElementException</code> in
+           the <code>recover</code> clause,
+           returning <code>NotFound</code> if the <code>User</code> was
+           not found.
+      </p>
+
+      <p>
+        The <code>retrieved</code> in the for comprehension is
+        a <code>PState[User]</code>. Calling <code>retrieved.map</code>
+        produces another <code>PState[User]</code> that reflects the
+        changes produced by the function passed
+        to <code>map</code>. In this case, we
+        call <code>UserInfo.mapUser</code>, which updates
+        a <code>User</code> according to the information in
+        the <code>UserInfo</code>. The resulting <code>PState</code>
+        is stored in a local val named <code>modified</code>.
+      </p>
+
+      <p>
+        We then pass <code>modified</code> on
+        to <code>userRepo.update</code>. This method persists the
+        changes, but like <code>userRepo.create</code>, it might
+        generate a <code>DuplicateKeyValException</code> if we try to
+        update the user to have a conflicting username or email. Once
+        again, we handle this problem in the <code>recover</code>
+        clause, converting the longevity exception into a Simple
+        Blogging service exception.
+      </p>
+      
+    </div>
+
+    <div>
+      <h2>Exercising the API</h2>
+
+      <p>
+        Of course, this API actually works. Feel free to play around
+        with it with the tool of your choice. You could use a UNIX
+        tool such as <a href="https://github.com/curl/curl" target="_blank">curl</a>,
+        or perhaps a Chrome plugin such as
+        <a href="https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop"
+        target="_blank">Postman</a>
+        or <a href="https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo"
+        target="_blank">Advanced REST client</a>. We have a slight
+        preference towards the Advanced REST client at the moment. It
+        is a little less quirky than Postman.
+      </p>
+
+      <p>
+        If you choose to use the Advanced REST client, we've exported
+        our sample requests
+        to <a href="https://raw.githubusercontent.com/longevityframework/simbl/master/tutorial/arc-simbl-export.json"
+        target="_blank">arc-simbl-export.json</a>. You can use this as
+        a starting point. (You won't be able to view this file within
+        Typesafe Activator, so we've provided a link to the raw file
+        in GitHub.)
+      </p>
+      
+    </div>
+
+    <div>
+      <h2>Testing CRUD Operations</h2>
+
+      <p>
+        Before we wrap up, we'd like to point out a useful tool that
+        you can pull out of the <code>LongevityContext</code>:
+        the <code>RepoCrudSpec</code>. This will test all of your CRUD
+        operations for all of your persistent types against a test
+        database. It's trivial to set up, as you can see
+        in <a href="#code/test/SimblRepoCrudSpec.scala">SimblRepoCrudSpec.scala</a>. There's
+        also a little framework for testing queries, and you can see
+        an example of that in 
+        <a href="#code/test/BlogPostQuerySpec.scala">BlogPostQuerySpec.scala</a>. You
+        can run these for yourself using the <code>Test</code> tab in
+        the left margin, or by running <code>sbt test</code> from the
+        console.
+      </p>
+
+    </div>
+
+    <div>
+      <h2>Exercises for the Reader</h2>
+
+      <p>
+        While Simple Blogging is a working application, it has been
+        developed for the purposes of this tutorial, and consequently,
+        it is incomplete in a number of ways. As an exercise, you
+        might try to enhance the application to fill in the gaps. We
+        will be happy to consider any pull requests you make that fill
+        in missing features. Here are some ideas for experimentations
+        you might try:
+      </p>
+
+      <ul>
+        <li>
+          Add a <code>Comment</code> aggregate to the subdomain.
+        </li>
+        <li>
+          Put in service methods and routes for <code>BlogPost</code>
+          and <code>Blog</code>.
+        </li>
+        <li>
+          Write unit tests for the Play routes.
+        </li>
+        <li>
+          Write a simple UI that uses the backing API.
+        </li>
+      </ul>
+
+      <p>
+        Thank you very much for working through this tutorial! We hope
+        you enjoy
+        <a href="http://longevityframework.github.io/longevity/"
+        target="_blank">longevity</a> as much as we do. If you would
+        like to investigate further, please take a look at
+        our <a href="http://longevityframework.github.io/longevity/manual/"
+        target="_blank">user manual</a>. Also, please write to
+        our <a href="https://groups.google.com/forum/#!forum/longevity-users"
+        target="_blank">discussion forum</a> to tell us about about
+        your experience with longevity, or to ask any questions.
+      </p>
+
+      <p>
+        Happy coding!
+      </p>
+
+    </div>
+    
+  </body>
+</html>
