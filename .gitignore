@@ -1,3 +1,8 @@
 /.idea
 /.sbtserver/
 /TAGS
+/logs/
+/project/project/
+/project/target/
+/target/
+/project/.sbtserver
