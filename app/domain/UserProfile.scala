@@ -1,6 +1,6 @@
 package domain
 
-import longevity.subdomain.embeddable.Embeddable
+import longevity.subdomain.Embeddable
 
 case class UserProfile(
   tagline: String,
