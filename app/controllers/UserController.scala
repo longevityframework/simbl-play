@@ -8,7 +8,6 @@ import javax.inject._
 import longevity.exceptions.persistence.DuplicateKeyValException
 import longevity.persistence.PState
 import longevity.persistence.Repo
-import longevity.subdomain.ptype.Query.All
 import play.api._
 import play.api.mvc._
 import scala.concurrent.ExecutionContext
@@ -82,7 +81,8 @@ extends Controller {
   def retrieveAllUsers() = Action.async {
     def stateToInfo(state: PState[User]) = UserInfo.fromUser(state.get)
     def usersToUserInfos(users: Seq[PState[User]]) = users.map(stateToInfo)
-    userRepo.retrieveByQuery(All()).map(usersToUserInfos).map(infos => Ok(Json.toJson(infos)))
+    import User.queryDsl._
+    userRepo.retrieveByQuery(filterAll).map(usersToUserInfos).map(infos => Ok(Json.toJson(infos)))
   }
 
   def retrieveUserProfile(username: String) = Action.async {
