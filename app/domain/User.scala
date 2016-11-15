@@ -1,14 +1,12 @@
 package domain
 
-import longevity.subdomain.Persistent
 import longevity.subdomain.PType
 
 case class User(
   username: Username,
   email: Email,
   fullname: String,
-  profile: Option[UserProfile])
-extends Persistent {
+  profile: Option[UserProfile]) {
 
   def updateProfile(profile: UserProfile): User = copy(profile = Some(profile))
 
