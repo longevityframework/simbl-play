@@ -13,8 +13,7 @@ import play.api.Environment
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-  private lazy val coreDomain = new SimblSubdomain
-  private lazy val longevityContext = LongevityContext(coreDomain)
+  private lazy val longevityContext = LongevityContext(SimblSubdomain)
   private lazy val repoPool = longevityContext.repoPool
 
   lazy val blogRepo = repoPool[Blog]

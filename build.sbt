@@ -21,17 +21,19 @@ scalacOptions ++= Seq(
   "-unchecked")
 
 libraryDependencies ++= {
-  val longevityVersion = "0.17.0"
+  val longevityVersion = "0.18-SNAPSHOT"
   val scalaTestVersion = "3.0.1"
   val scalaTimeVersion = "2.14.0"
   Seq(
     ws, cache,
-    "com.github.nscala-time" %% "nscala-time" % scalaTimeVersion,
-    "org.longevityframework" %% "longevity" % longevityVersion,
+    "com.github.nscala-time" %% "nscala-time"              % scalaTimeVersion,
+    "org.longevityframework" %% "longevity"                % longevityVersion,
     "org.longevityframework" %% "longevity-cassandra-deps" % longevityVersion,
-    "org.longevityframework" %% "longevity-mongo-deps" % longevityVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+    "org.longevityframework" %% "longevity-mongo-deps"     % longevityVersion,
+    "org.scalatest"          %% "scalatest"                % scalaTestVersion % Test
   )
 }
+
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 
 fork in run := true

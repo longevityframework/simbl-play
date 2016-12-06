@@ -3,8 +3,7 @@ import domain.SimblSubdomain
 
 /** default container for all the simbl application components */
 trait TestSimblContext {
-  val coreDomain = new SimblSubdomain
-  val longevityContext = LongevityContext(coreDomain)
+  val longevityContext = LongevityContext(SimblSubdomain)
 }
 
 object TestSimblContext extends TestSimblContext

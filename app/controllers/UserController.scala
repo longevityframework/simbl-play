@@ -128,10 +128,10 @@ extends Controller {
   }
 
   private def handleDuplicateKeyVal(e: DuplicateKeyValException[_], info: UserInfo) = {
-    e.key match {
-      case User.keys.username =>
+    e.key.prop match {
+      case User.props.username =>
         Conflict(s"user with username ${info.username} already exists")
-      case User.keys.email =>
+      case User.props.email =>
         Conflict(s"user with email ${info.email} already exists")
     }
   }
