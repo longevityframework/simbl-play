@@ -21,7 +21,7 @@ scalacOptions ++= Seq(
   "-unchecked")
 
 libraryDependencies ++= {
-  val longevityVersion = "0.18-SNAPSHOT"
+  val longevityVersion = "0.18.0"
   val scalaTestVersion = "3.0.1"
   val scalaTimeVersion = "2.14.0"
   Seq(
