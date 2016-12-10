@@ -1,9 +1,9 @@
 import longevity.context.LongevityContext
-import domain.SimblSubdomain
+import domain.SimblDomainModel
 
 /** default container for all the simbl application components */
 trait TestSimblContext {
-  val longevityContext = LongevityContext(SimblSubdomain)
+  val longevityContext = LongevityContext(SimblDomainModel)
 }
 
 object TestSimblContext extends TestSimblContext

@@ -4,7 +4,7 @@ import com.google.inject.TypeLiteral
 import com.google.inject.name.Names
 import domain.Blog
 import domain.BlogPost
-import domain.SimblSubdomain
+import domain.SimblDomainModel
 import domain.User
 import longevity.context.LongevityContext
 import longevity.persistence.Repo
@@ -13,7 +13,7 @@ import play.api.Environment
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-  private lazy val longevityContext = LongevityContext(SimblSubdomain)
+  private lazy val longevityContext = LongevityContext(SimblDomainModel)
   private lazy val repoPool = longevityContext.repoPool
 
   lazy val blogRepo = repoPool[Blog]

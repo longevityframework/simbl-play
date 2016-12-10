@@ -1,5 +1,5 @@
 package domain
 
-import longevity.subdomain.annotations.keyVal
+import longevity.model.annotations.keyVal
 
 @keyVal[User] case class Email(email: String)
