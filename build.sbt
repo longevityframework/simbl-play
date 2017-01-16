@@ -21,15 +21,16 @@ scalacOptions ++= Seq(
   "-unchecked")
 
 libraryDependencies ++= {
-  val longevityVersion = "0.19.0"
+  val longevityVersion = "0.20.0"
   val scalaTestVersion = "3.0.1"
-  val scalaTimeVersion = "2.14.0"
+  val scalaTimeVersion = "2.16.0"
   Seq(
     ws, cache,
     "com.github.nscala-time" %% "nscala-time"              % scalaTimeVersion,
     "org.longevityframework" %% "longevity"                % longevityVersion,
     "org.longevityframework" %% "longevity-cassandra-deps" % longevityVersion,
-    "org.longevityframework" %% "longevity-mongo-deps"     % longevityVersion,
+    "org.longevityframework" %% "longevity-mongodb-deps"   % longevityVersion,
+    "org.longevityframework" %% "longevity-sqlite-deps"    % longevityVersion,
     "org.scalatest"          %% "scalatest"                % scalaTestVersion % Test
   )
 }
