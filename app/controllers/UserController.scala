@@ -82,7 +82,7 @@ extends Controller {
     def stateToInfo(state: PState[User]) = UserInfo.fromUser(state.get)
     def usersToUserInfos(users: Seq[PState[User]]) = users.map(stateToInfo)
     import User.queryDsl._
-    userRepo.retrieveByQuery(filterAll).map(usersToUserInfos).map(infos => Ok(Json.toJson(infos)))
+    userRepo.queryToFutureVec(filterAll).map(usersToUserInfos).map(infos => Ok(Json.toJson(infos)))
   }
 
   def retrieveUserProfile(username: String) = Action.async {
