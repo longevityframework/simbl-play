@@ -2,4 +2,4 @@ package domain
 
 import longevity.model.annotations.keyVal
 
-@keyVal[BlogPost] case class BlogPostUri(uri: Uri)
+@keyVal[SimblDomainModel, BlogPost] case class BlogPostUri(uri: Uri)
