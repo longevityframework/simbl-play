@@ -20,7 +20,7 @@ import play.api.libs.json._
 @Singleton
 class UserController @Inject() (
   actorSystem: ActorSystem,
-  private val repo: Repo[SimblDomainModel])(
+  private val repo: Repo[Future, SimblDomainModel])(
   implicit exec: ExecutionContext)
 extends Controller {
 
@@ -83,7 +83,7 @@ extends Controller {
     def stateToInfo(state: PState[User]) = UserInfo.fromUser(state.get)
     def usersToUserInfos(users: Seq[PState[User]]) = users.map(stateToInfo)
     import User.queryDsl._
-    repo.queryToFutureVec(filterAll).map(usersToUserInfos).map(infos => Ok(Json.toJson(infos)))
+    repo.queryToVector(filterAll).map(usersToUserInfos).map(infos => Ok(Json.toJson(infos)))
   }
 
   def retrieveUserProfile(username: String) = Action.async {

@@ -1,9 +1,9 @@
 import longevity.test.QuerySpec
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import domain.BlogPost
 import domain.SimblDomainModel
 
-class BlogPostQuerySpec extends QuerySpec[SimblDomainModel, BlogPost](TestSimblContext.longevityContext) {
+class BlogPostQuerySpec extends QuerySpec[Future, SimblDomainModel, BlogPost](TestSimblContext.longevityContext) {
 
   lazy val sample = randomP
 
